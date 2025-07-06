@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { UserPlusIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import UrlInputForm from '../../components/analysis/UrlInputForm';
+import ApiDebug from '../../components/debug/ApiDebug';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -60,6 +61,9 @@ const Home = () => {
           </div>
         )}
       </div>
+
+      {/* Debug Panel - Remove this in production */}
+      {process.env.NODE_ENV === 'development' && <ApiDebug />}
     </div>
   );
 };

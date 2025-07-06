@@ -23,10 +23,23 @@ app.use(helmet()); // Security headers
 
 // Fixed: Proper CORS configuration for Railway deployment
 app.use(cors({
-  origin: [
-    'https://frontend-production-6de4.up.railway.app/', // Replace with your actual frontend domain
-    'http://localhost:3000' // For local development
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'https://frontend-production-6de4.up.railway.app',
+      'http://localhost:3000',
+      'http://localhost:3001'
+    ];
+
+    // Allow any Railway frontend URL pattern
+    if (origin.includes('.up.railway.app') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
@@ -52,6 +65,24 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     memory: process.memoryUsage()
+  });
+});
+
+// Debug endpoint to check configuration
+app.get('/debug', (req, res) => {
+  res.status(200).json({
+    status: 'debug',
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+    firebase: {
+      projectId: process.env.FIREBASE_PROJECT_ID ? 'configured' : 'missing',
+      privateKey: process.env.FIREBASE_PRIVATE_KEY ? 'configured' : 'missing',
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL ? 'configured' : 'missing'
+    },
+    playwright: {
+      installed: require('fs').existsSync(require('path').join(__dirname, 'node_modules', 'playwright'))
+    },
+    timestamp: new Date().toISOString()
   });
 });
 

@@ -39,9 +39,12 @@ const createAnalysisRequest = async (req, res) => {
     // Trigger accessibility scanning process asynchronously
     setImmediate(async () => {
       try {
+        console.log(`🚀 Starting background scan for request ${analysisRequest.id}`);
         await scanningService.processAnalysisRequest(analysisRequest.id);
+        console.log(`✅ Background scan completed for request ${analysisRequest.id}`);
       } catch (error) {
-        console.error(`Background scan failed for request ${analysisRequest.id}:`, error);
+        console.error(`❌ Background scan failed for request ${analysisRequest.id}:`, error);
+        console.error('Error stack:', error.stack);
       }
     });
 

@@ -8,7 +8,9 @@
   "dev": "nodemon server.js",
   "test": "echo \"Error: no test specified\" && exit 1",
   "lint": "eslint .",
-  "serve": "node server.js" 
+  "serve": "node server.js",
+  "postinstall": "npx playwright install --with-deps chromium",
+  "build": "npx playwright install --with-deps chromium"
   },
 
   "dependencies": {

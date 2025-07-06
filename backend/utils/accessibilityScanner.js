@@ -22,7 +22,8 @@ class AccessibilityScanner {
   async initialize() {
     try {
       console.log('🚀 Launching browser...');
-      this.browser = await chromium.launch({
+      // Enhanced browser launch options for Railway/production environments
+      const launchOptions = {
         headless: true,
         args: [
           '--no-sandbox',
@@ -36,9 +37,21 @@ class AccessibilityScanner {
           '--disable-features=VizDisplayCompositor',
           '--disable-background-timer-throttling',
           '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding'
+          '--disable-renderer-backgrounding',
+          '--disable-features=TranslateUI',
+          '--disable-ipc-flooding-protection'
         ]
-      });
+      };
+
+      // Add additional options for Railway environment
+      if (process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production') {
+        launchOptions.args.push(
+          '--single-process',
+          '--memory-pressure-off'
+        );
+      }
+
+      this.browser = await chromium.launch(launchOptions);
 
       this.page = await this.browser.newPage({
         viewport: this.options.viewport,
@@ -52,6 +65,19 @@ class AccessibilityScanner {
       return true;
     } catch (error) {
       console.error('❌ Failed to initialize browser:', error);
+      console.error('Browser error details:', {
+        message: error.message,
+        stack: error.stack,
+        environment: process.env.NODE_ENV,
+        railway: !!process.env.RAILWAY_ENVIRONMENT,
+        playwrightVersion: require('playwright/package.json').version
+      });
+
+      // Check if it's a browser not found error
+      if (error.message.includes('Executable doesn\'t exist') || error.message.includes('browserType.launch')) {
+        throw new Error('Playwright browsers not installed. Run: npx playwright install chromium');
+      }
+
       throw new Error(`Browser initialization failed: ${error.message}`);
     }
   }

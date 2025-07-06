@@ -52,4 +52,30 @@ router.get('/history/comparison', getHistoricalComparison);
 // Get detailed violation analysis for a result
 router.get('/:id/violations', optionalAuth, getViolationAnalysis);
 
+// Test endpoint to verify scanning functionality
+router.get('/test/scanner', async (req, res) => {
+  try {
+    const AccessibilityScanner = require('../utils/accessibilityScanner');
+    const scanner = new AccessibilityScanner();
+
+    console.log('🧪 Testing scanner initialization...');
+    await scanner.initialize();
+    console.log('✅ Scanner test successful');
+    await scanner.cleanup();
+
+    res.json({
+      message: 'Scanner test successful',
+      status: 'working',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Scanner test failed:', error);
+    res.status(500).json({
+      message: 'Scanner test failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 module.exports = router;
