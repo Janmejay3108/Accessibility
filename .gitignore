@@ -110,7 +110,6 @@ public
 .pnp.*
 
 # Build artifacts
-build/
 dist/
 *.tgz
 *.tar.gz
@@ -158,10 +157,6 @@ config/local.js
 # PM2 process file
 ecosystem.config.js
 
-# Docker
-.dockerignore
-Dockerfile.dev
-
 # Backup files
 *.backup
 *.bak
@@ -169,6 +164,3 @@ Dockerfile.dev
 # Ignore firebase service account key
 backend/config/firebase-service-account-key.json
 
-
-
-.vercel

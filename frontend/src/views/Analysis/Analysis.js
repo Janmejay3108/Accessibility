@@ -77,14 +77,56 @@ const Analysis = () => {
 
   const startStatusPolling = () => {
     analysisService.pollAnalysisStatus(id, (statusUpdate) => {
+      console.log('Status update received:', statusUpdate);
       setStatus(statusUpdate);
-      
+
       if (statusUpdate.status === 'completed') {
         loadResults();
-      } else if (statusUpdate.status === 'error') {
-        setError(statusUpdate.error || 'Analysis failed. Please try again.');
+      } else if (statusUpdate.status === 'error' || statusUpdate.status === 'failed') {
+        console.log('Error detected, setting error message');
+        const errorMessage = getErrorMessage(statusUpdate.error);
+        console.log('Error message:', errorMessage);
+        setError(errorMessage);
       }
     });
+  };
+
+  const getErrorMessage = (error) => {
+    if (!error) {
+      return 'Analysis failed. Please try again.';
+    }
+
+    // Handle common error types with user-friendly messages
+    if (error.includes('Navigation failed') || error.includes('Failed to load page')) {
+      return 'Unable to access the website. Please check if the URL is correct and the website is accessible.';
+    }
+
+    if (error.includes('timeout') || error.includes('Timeout')) {
+      return 'The website took too long to respond. Please try again or check if the website is accessible.';
+    }
+
+    if (error.includes('HTTP 404') || error.includes('Not Found')) {
+      return 'The webpage was not found (404 error). Please check if the URL is correct.';
+    }
+
+    if (error.includes('HTTP 403') || error.includes('Forbidden')) {
+      return 'Access to the webpage is forbidden. The website may be blocking automated access.';
+    }
+
+    if (error.includes('HTTP 500') || error.includes('Internal Server Error')) {
+      return 'The website is experiencing server issues. Please try again later.';
+    }
+
+    if (error.includes('net::ERR_NAME_NOT_RESOLVED') || error.includes('getaddrinfo ENOTFOUND')) {
+      return 'The website domain could not be found. Please check if the URL is correct.';
+    }
+
+    if (error.includes('net::ERR_CONNECTION_REFUSED') || error.includes('ECONNREFUSED')) {
+      return 'Connection to the website was refused. The website may be down or blocking connections.';
+    }
+
+    // Return the original error message for other cases
+    return `Analysis failed: ${error}`;
   };
 
   const handleRetryAnalysis = async () => {
@@ -109,6 +151,7 @@ const Analysis = () => {
       case 'completed':
         return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
       case 'error':
+      case 'failed':
         return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />;
       case 'processing':
         return <ArrowPathIcon className="h-5 w-5 text-blue-500 animate-spin" />;
@@ -124,7 +167,8 @@ const Analysis = () => {
       case 'completed':
         return 'Analysis completed successfully';
       case 'error':
-        return status.error || 'Analysis failed';
+      case 'failed':
+        return status.error || error || 'Analysis failed';
       case 'processing':
         return status.message || 'Analyzing website...';
       default:
@@ -239,7 +283,7 @@ const Analysis = () => {
             <span className="text-sm font-medium text-gray-700">
               {getStatusMessage()}
             </span>
-            {status?.status === 'error' && (
+            {(status?.status === 'error' || status?.status === 'failed') && (
               <button
                 onClick={handleRetryAnalysis}
                 className="ml-auto text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"

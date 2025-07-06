@@ -218,15 +218,22 @@ export const analysisService = {
         const status = {
           status: statusData.analysisRequest?.status || statusData.status,
           message: statusData.scanStatus?.message || statusData.message,
-          error: statusData.error
+          error: statusData.analysisRequest?.error || statusData.error
         };
 
+        console.log('Polling response:', statusData);
+        console.log('Extracted status:', status);
         onUpdate(status);
-        
+
         // Continue polling if still processing or pending
         if ((status.status === 'processing' || status.status === 'pending') && attempts < maxAttempts) {
           attempts++;
           setTimeout(poll, 2000); // Poll every 2 seconds
+        }
+        // Stop polling if completed, failed, or error
+        else if (status.status === 'completed' || status.status === 'failed' || status.status === 'error') {
+          // Polling stops here
+          return;
         }
       } catch (error) {
         console.error('Error polling analysis status:', error);

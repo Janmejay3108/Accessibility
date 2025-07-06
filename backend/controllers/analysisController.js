@@ -364,7 +364,9 @@ const getScanStatus = async (req, res) => {
           url: analysisRequest.url,
           status: analysisRequest.status,
           requestTimestamp: analysisRequest.requestTimestamp,
-          completedTimestamp: analysisRequest.completedTimestamp
+          completedTimestamp: analysisRequest.completedTimestamp,
+          error: analysisRequest.metadata?.error || null,
+          metadata: analysisRequest.metadata
         },
         scanStatus: scanStatus
       }

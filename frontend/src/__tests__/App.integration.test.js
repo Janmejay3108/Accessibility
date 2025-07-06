@@ -229,6 +229,44 @@ describe('App Integration Tests', () => {
     expect(analyzeButton).not.toBeDisabled();
   });
 
+  test('handles failed analysis status with user-friendly error message', async () => {
+    const user = userEvent.setup();
+    const mockAnalysisId = 'test-analysis-id';
+
+    // Mock successful analysis creation
+    analysisService.createAnalysis.mockResolvedValue({
+      data: { data: { id: mockAnalysisId } }
+    });
+
+    // Mock status polling that returns failed status
+    analysisService.pollAnalysisStatus.mockImplementation((id, onUpdate) => {
+      // Simulate failed status with navigation error
+      setTimeout(() => {
+        onUpdate({
+          status: 'failed',
+          error: 'Navigation failed: net::ERR_NAME_NOT_RESOLVED'
+        });
+      }, 100);
+    });
+
+    renderWithRouter(['/']);
+
+    // Fill out form and submit
+    const urlInput = screen.getByLabelText(/website url/i);
+    const analyzeButton = screen.getByRole('button', { name: /analyze website/i });
+
+    await user.type(urlInput, 'https://nonexistent-fake-website.com');
+    await user.click(analyzeButton);
+
+    // Should show user-friendly error message
+    await waitFor(() => {
+      expect(screen.getByText(/the website domain could not be found/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    // Should not be stuck on "Waiting for Results"
+    expect(screen.queryByText(/waiting for results/i)).not.toBeInTheDocument();
+  });
+
   test('authentication workflow', async () => {
     const user = userEvent.setup();
     const mockUser = global.testUtils.createMockUser();
