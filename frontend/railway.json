@@ -5,7 +5,7 @@
     "buildCommand": "CI=false npm ci && npm run build"
   },
   "deploy": {
-    "startCommand": "npx serve -s build -p $PORT --host 0.0.0.0",
+    "startCommand": "npm run serve",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
