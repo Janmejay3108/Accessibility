@@ -68,8 +68,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Debug endpoint to check configuration
+// Debug endpoint to check configuration - Updated for Railway deployment
 app.get('/debug', (req, res) => {
+  console.log('Debug endpoint accessed at:', new Date().toISOString());
   res.status(200).json({
     status: 'debug',
     environment: process.env.NODE_ENV || 'development',
@@ -82,7 +83,9 @@ app.get('/debug', (req, res) => {
     playwright: {
       installed: require('fs').existsSync(require('path').join(__dirname, 'node_modules', 'playwright'))
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    version: '1.0.2',
+    deploymentCheck: 'Railway deployment working'
   });
 });
 
