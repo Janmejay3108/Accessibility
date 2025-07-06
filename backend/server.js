@@ -66,7 +66,8 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     memory: process.memoryUsage(),
-    version: '1.0.3-railway-fix'
+    version: '1.0.4-force-deploy',
+    deployTime: new Date().toISOString()
   });
 });
 
